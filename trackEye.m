@@ -21,6 +21,7 @@ p.addParameter('frameBinSize',3);
 p.addOptional('showFilterSteps',false);% make true when finding correct filtering...
                                        %params for the movie 
 p.addParameter('showPupilDetect',true);
+p.addParameter('keepOrigLength',true);
 
 parse(p,varargin{:});
 
@@ -128,6 +129,15 @@ for i = 1:eyeVid.NumFrames
         
         %do blob analysis and draw over frame
         [area,centroid,bbox,majoraxis,minoraxis,eccentricity,perimeter] = eBlob(filled);
+        if isempty(centroid)
+            centroid(1:4) = 0;
+            bbox(1:4) = 0;
+            area = 0;
+            majoraxis = 0;
+            minoraxis = 0;
+            eccentricity = 0;
+            perimeter = 0;
+        end
         pupilDetect = insertShape(frame,'Circle',[centroid(1),centroid(2),bbox(3)/2],...
             'LineWidth',2,'Color','black');
 %         centroidDetect = insertShape(filled,'Circle',[centroid(1),centroid(2),bbox(3)/2],...
@@ -160,15 +170,20 @@ for i = 1:eyeVid.NumFrames
     end
        
 end
+if ~ p.Results.keepOrigLength
+    rep = 1;
+else
+    rep = p.Results.frameBinSize;
+end
+pupil.centroid = repelem(centroidCoordVector,rep,1);
+pupil.width = repelem(widthHeightVector(:,1),rep,1);
+pupil.height = repelem(widthHeightVector(:,2),rep,1);
+pupil.eccentricity = repelem(eccentricityVector(:,3),rep,1);
+pupil.majorAxis = repelem(eccentricityVector(:,1),rep,1);
+pupil.minorAxis = repelem(eccentricityVector(:,2),rep,1);
+pupil.area = repelem(areaPeriVector(:,1),rep,1);
+pupil.perimeter = repelem(areaPeriVector(:,2),rep,1);
 
-pupil.centroid = centroidCoordVector;
-pupil.width = widthHeightVector(:,1);
-pupil.width = widthHeightVector(:,2);
-pupil.eccentricity = eccentricityVector(:,3);
-pupil.majorAxis = eccentricityVector(:,1);
-pupil.minorAxis = eccentricityVector(:,2);
-pupil.area = areaPeriVector(:,1);
-pupil.perimeter = areaPeriVector(:,2);
 end
 %% plot blob measurements
 % %plot width / time, height/time, eccentricity/time, width/height, mvmt
