@@ -31,12 +31,6 @@ parse(p,data,rectPositions,varargin{:});
 data = p.Results.data;
 rectPositions = p.Results.rectPositions;
 pos = p.Results.posVector;
-
-
-%% get ball tracking data and turn it into a string
-% mvmt = erase(ballTrackingData,'x');
-% mvmt = erase(mvmt,'y')';
-% mvmt = str2num(mvmt);
     
 %% parse data
 % create vector with label number for every cycle
@@ -60,7 +54,7 @@ switch isvector(data)
             end
             
             %grab portion of data that corresponds to ith trial
-            trialIndexVector = 1+(55*(i-1)):55+(55*(i-1));
+            trialIndexVector = 1+(p.Results.numFramesperTrial*(i-1)):p.Results.numFramesperTrial+(p.Results.numFramesperTrial*(i-1));
             trialBlock = data(:,:,trialIndexVector);
             
             %place that trial in corresponding cell in parsedData
@@ -81,7 +75,7 @@ switch isvector(data)
             end
             
             %grab portion of data that corresponds to ith trial
-            trialIndexVector = 1+(55*(i-1)):55+(55*(i-1));
+            trialIndexVector = 1+(p.Results.numFramesperTrial*(i-1)):p.Results.numFramesperTrial+(p.Results.numFramesperTrial*(i-1));
             trialBlock = data(trialIndexVector,1);
             
             %place that trial in corresponding cell in parsedData
