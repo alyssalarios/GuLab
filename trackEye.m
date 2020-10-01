@@ -14,9 +14,8 @@ function [pupil, pupilMontageOverlay] = trackEye(varargin)
 
 p = inputParser;
 p.addRequired('vidPath');
-p.addParameter('sensitivity',0.1);
+p.addParameter('sensitivity',0.2);
 p.addParameter('pixelAreaThresh',30);
-p.addParameter('maskSurround',256);
 p.addParameter('frameBinSize',3);
 p.addOptional('showFilterSteps',false);% make true when finding correct filtering...
                                        %params for the movie 
@@ -41,8 +40,10 @@ eBlob = vision.BlobAnalysis('MajorAxisLengthOutputPort',true,...
 fig = figure(1);
 imshow(read(eyeVid,1));
 eyeRect = drawrectangle('LineWidth',1,'Color','red');
+
 fig3 = figure(3);
 title('Close this window when done drawing ROI');
+
 uiwait(fig3);
 
 %applymask
@@ -61,6 +62,13 @@ pupilMontageOverlay = zeros(size(frame1,1),size(frame1,2),binnedSize);
 
 counter = 0;
 
+%% get points for surrounding mask
+figure(1)
+imshow(read(eyeVid,1))
+fprintf('Double click for maskSurround pixel value');
+[x,y] = getpts;
+frame1 = rgb2gray(read(eyeVid,1));
+maskSurround = frame1(ceil(x),ceil(y),1);
 
 %% loop through frames in eyeVid movie object
 
@@ -69,7 +77,7 @@ for i = 1:eyeVid.NumFrames
     
     %read frame, apply mask, and binarize image
     bw = rgb2gray(frame);
-    bw(notEyeRect) = p.Results.maskSurround;
+    bw(notEyeRect) = maskSurround;
     bin = imbinarize(bw,'adaptive','ForegroundPolarity','dark',...
         'Sensitivity',p.Results.sensitivity);
     bin = imcomplement(bin);
