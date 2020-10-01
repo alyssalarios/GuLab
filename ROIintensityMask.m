@@ -14,7 +14,7 @@ function [activeROIintensities, quietROIintensities] = ROIintensityMask(data,var
 %% Initialize inputParser
 p = inputParser;
 p.addRequired('data');
-p.addParameter('normalize',true)
+p.addParameter('normalize',true);
 p.addParameter('normFrames',(8:14));
 p.addParameter('numFrames',55);
 p.addParameter('stimFrames',(25:35));

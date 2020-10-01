@@ -31,6 +31,7 @@ parse(p,data,rectPositions,varargin{:});
 data = p.Results.data;
 rectPositions = p.Results.rectPositions;
 pos = p.Results.posVector;
+numTrials = p.Results.numTrials;
     
 %% parse data
 % create vector with label number for every cycle
@@ -38,7 +39,7 @@ cycleLabels = zeros(size(rectPositions,3),1);
 locationPerms = permn(pos,2)';
 
 % output data structure
-parsedData = cell(length(locationPerms),p.Results.numTrials);
+parsedData = cell(length(locationPerms),numTrials);
 
 %create cell array with gcamp movie data separated by stim location and
 %trial

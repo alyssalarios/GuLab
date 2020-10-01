@@ -156,7 +156,7 @@ for i = 1:eyeVid.NumFrames
         pupilMontageOverlay(:,:,counter) = rgb2gray(pupilDetect);
         
         %grab pupil measurements
-        centroidCoordVector(counter,:) = centroid;
+        centroidCoordVector(counter,:) = centroid(1:2);
         widthHeightVector(counter,:) = [bbox(3),bbox(4)];
         eccentricityVector(counter,:) = [majoraxis,minoraxis,eccentricity];
         areaPeriVector(counter,:) = [area,perimeter];
