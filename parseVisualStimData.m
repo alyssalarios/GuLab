@@ -31,7 +31,8 @@ parse(p,data,rectPositions,varargin{:});
 data = p.Results.data;
 rectPositions = p.Results.rectPositions;
 pos = p.Results.posVector;
-numTrials = p.Results.numTrials;
+numTrials = size(rectPositions,3)/9;
+
     
 %% parse data
 % create vector with label number for every cycle
