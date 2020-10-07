@@ -24,13 +24,13 @@ concatRawSave = 0; %starting from raw/ split up data movies or not
 makeGridTifSave = 0;%save grid tif or not
     % if saving, go into Gridtif chunk and make sure dimmensions (gridDims)
     %are correct for stimulus parameters
-saveData = 1; % if 1, saves preprocessed data in a mat file. 
+saveData = 0; % if 1, saves preprocessed data in a mat file. 
     % 
 
 
 normFrames = 8:14;
 stimFrames = 25:35;
-stimType = 'bpNoise'; %takes 'bpNoise' or 'driftGrating'
+stimType = 'bpNoise'; %takes 'bpNoise' or 'driftCheck'
 
 %% Concatenate raw data
 % Select folder with raw gcamp movies for concatenation
@@ -78,7 +78,7 @@ switch stimType
         catMovie = loadtiff(catMovieDir.name);
         load(metaFile.name,'rectPositions');
         
-        parsedData = parseVisualStimData(catMovie,rectPositions); % depending on how we 
+        parsedData = parseVisualStimData(catMovie,rectPositions,'bpNoise'); % depending on how we 
         %change the bpNoise stim presentation, might need to go back into
         %this function and make it apply properly
 %       Parameters for this function - name/value pairs
@@ -93,7 +93,7 @@ switch stimType
 
         % average all trials and subtract baseline
         DfAllTrials = avgDf(parsedData,normFrames);
-    case 'driftGrating'
+    case 'driftCheck'
         %load movie and grating type
         catMovieDir = dir('*cat.tif'); 
         metaFile = dir('*.mat');
@@ -123,11 +123,11 @@ end
 permutedAllTrials = cellfun(@(x) permute(x,[3,1,2]),DfAllTrials,...
     'un',false);
 
-topDown = permutedAllTrials{1,1};
-bottomUp = permutedAllTrials{2,1};
-leftRight = permutedAllTrials{3,1};
-rightLeft = permutedAllTrials{4,1};
+rightLeft = permutedAllTrials{1,1};
+leftRight = permutedAllTrials{2,1};
+topDowm = permutedAllTrials{3,1};
+downUp = permutedAllTrials{4,1};
 
 if saveData
-    save([dataPath,'/DfMovies.mat'],'topDown','bottomUp','leftRight','rightLeft');
+    save([dataPath,'/DfMovies.mat'],'rightLeft','leftRight','topDown','downUp');
 end

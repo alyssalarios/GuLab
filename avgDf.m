@@ -5,9 +5,6 @@ function dfAllSweeps = avgDf(data,preStimFrames)
 % contains an average movie for that stim with baseline subtracted in each
 % frame. 
 
-%next the df per frame is computed by subtracting the average activity in the prestim
-%period 
-
 %prestim frames is an vector for which frames in each trial correspond to 
 %prestim period
 
