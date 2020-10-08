@@ -12,19 +12,23 @@ filename = uigetdir();
 
 cd(filename);
 tiflist = dir(fullfile(filename,'*.tif'));
+% sort by time acquired 
+T = struct2table(tiflist);
+sortedT = sortrows(T,'date');
+sortedS = table2struct(sortedT);
 
 % loop through list and append each element
 catTif = [];
 
-for i = 1:length(tiflist)
-    fprintf('Loading %s\n',tiflist(i).name);
-    movieChunk = loadtiff(tiflist(i).name);
+for i = 1:length(sortedS)
+    fprintf('Loading %s\n',sortedS(i).name);
+    movieChunk = loadtiff(sortedS(i).name);
     catTif = cat(3,catTif,movieChunk);
 end
 
 % save to datafolder
 fprintf('saving concatenated file\n');
-saveastiff(catTif, [tiflist(1).name(1:end-6),'_cat.tif']);
+saveastiff(catTif, [sortedS(1).name(1:end-6),'_cat.tif']);
 
     
     

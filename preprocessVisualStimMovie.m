@@ -21,16 +21,16 @@
 
 %% Routine parameters
 concatRawSave = 0; %starting from raw/ split up data movies or not
-makeGridTifSave = 0;%save grid tif or not
+makeGridTifSave = 1;%save grid tif or not
     % if saving, go into Gridtif chunk and make sure dimmensions (gridDims)
     %are correct for stimulus parameters
-saveData = 0; % if 1, saves preprocessed data in a mat file. 
+saveData = 1; % if 1, saves preprocessed data in a mat file. 
     % 
+loadCatTif = 1;
 
-
-normFrames = 8:14;
-stimFrames = 25:35;
-stimType = 'bpNoise'; %takes 'bpNoise' or 'driftCheck'
+normFrames = 5:15;
+stimFrames = 25:150;
+stimType = 'driftCheck'; %takes 'bpNoise' or 'driftCheck'
 
 %% Concatenate raw data
 % Select folder with raw gcamp movies for concatenation
@@ -43,6 +43,14 @@ switch concatRawSave
         cd(filename) % go to correct directory 
 end
 
+        catMovieDir = dir('*cat.tif'); 
+        metaFile = dir('*.mat');
+  if loadCatTif    
+        fprintf('Loading %s cat\n',catMovieDir.name);
+        catMovie = loadtiff(catMovieDir.name);
+        
+        load(metaFile.name,'rectPositions','cycleOrder');
+  end
 %% Gridtif
 switch makeGridTifSave
     
@@ -54,11 +62,11 @@ switch makeGridTifSave
     %presentation frames to get a sense of differential activity
     
     % initialize gridstim shape
-    gridDims = [3,3];
+    gridDims = [2,2];
     
     % Create a 'ProcessedData' folder within raw data folder and deposits
     % gridstim tif
-    tiff = catTif;
+    tiff = catMovie;
     createGridsTiff;
     
     case 0 % if not saving grid, make a folder in data directory 
@@ -72,13 +80,9 @@ switch stimType
     case 'bpNoise'
         
         %load movie and positions for bandpass filtered noise presentations
-        catMovieDir = dir('*cat.tif'); 
-        metaFile = dir('*.mat');
+
         
-        catMovie = loadtiff(catMovieDir.name);
-        load(metaFile.name,'rectPositions');
-        
-        parsedData = parseVisualStimData(catMovie,rectPositions,'bpNoise'); % depending on how we 
+        parsedData = parseVisualStimData(catMovie,rectPositions,stimType); % depending on how we 
         %change the bpNoise stim presentation, might need to go back into
         %this function and make it apply properly
 %       Parameters for this function - name/value pairs
@@ -95,39 +99,32 @@ switch stimType
         DfAllTrials = avgDf(parsedData,normFrames);
     case 'driftCheck'
         %load movie and grating type
-        catMovieDir = dir('*cat.tif'); 
-        metaFile = dir('*.mat');
+
         
-        catMovie = loadtiff(catMovieDir.name);
-        load(metaFile.name,'rectPositions'); %change this to luke variable
-        
-        parsedData = parseVisualStimData(catMovie,rectPositions); % depending on how we 
-        %change the bpNoise stim presentation, might need to go back into
-        %this function and make it apply properly
-%       Parameters for this function - name/value pairs
-%           data (required raw tif)
-%           rectPositions (required 1x2xn dimmensional array specifying stim
-%               locations)
-%           numPosns = number of locations possible (default 9)
-%           numTrials = number of trials per location (default 6)
-%           numFramesperTrial = number of frames in movie per trial (default 55)
-%           posVector = locations on screen that stims can take default [.2,.5,.8]
+        parsedData = parseVisualStimData(catMovie,cycleOrder,stimType,'numCycles',6);
+       
 
         % average all trials and subtract baseline
         DfAllTrials = avgDf(parsedData,normFrames);
 end
 
 %% Separate averaged movies into new variables and save
-
-% permute so that first dimmension is time 
-permutedAllTrials = cellfun(@(x) permute(x,[3,1,2]),DfAllTrials,...
-    'un',false);
-
-rightLeft = permutedAllTrials{1,1};
-leftRight = permutedAllTrials{2,1};
-topDowm = permutedAllTrials{3,1};
-downUp = permutedAllTrials{4,1};
-
-if saveData
-    save([dataPath,'/DfMovies.mat'],'rightLeft','leftRight','topDown','downUp');
+switch stimType
+    case 'driftCheck'
+        % permute so that first dimmension is time
+        permutedAllTrials = cellfun(@(x) permute(x,[3,1,2]),DfAllTrials,...
+            'un',false);
+        
+        rightLeft = permutedAllTrials{1,1};
+        leftRight = permutedAllTrials{2,1};
+        topDown = permutedAllTrials{3,1};
+        downUp = permutedAllTrials{4,1};
+        
+        % generate key-value pair for phase-delay angle conversion in python
+        % load(metaFile.name,'
+        
+        
+        if saveData
+            save([dataPath,'/DfMovies.mat'],'rightLeft','leftRight','topDown','downUp');
+        end
 end

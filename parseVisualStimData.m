@@ -79,8 +79,9 @@ switch isvector(data)
             case 'driftCheck'
                 % output data structure
                 parsedData = cell(length(rectPositions),numCycles);
-                
+                lastIndex = 0;
                 for i = 1:length(driftVector)
+                    
                     %define number of frames in trial
                     if driftVector(i) == 1
                         framesPerTrial = restFrames + 187;
@@ -91,8 +92,9 @@ switch isvector(data)
                     end
                     
                     % grab portion of data for ith trial
-                    trialIndexVector = 1+(framesPerTrial*(i-1)):framesPerTrial+(framesPerTrial*(i-1));
+                    trialIndexVector = lastIndex+1: lastIndex + framesPerTrial ;
                     trialBlock = data(:,:,trialIndexVector);
+                    lastIndex = trialIndexVector(end);
                     
                     %place that trial in corresponding cell in parsedData
                     posEmptyVec = cellfun(@(x) isempty(x), parsedData(driftVector(i),:));

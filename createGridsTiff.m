@@ -48,13 +48,11 @@ dataPath = [cd,'/','ProcessedData'];
 
 
 for i = 1: length(filelist)
-    
-    load(metalist(i).name,'rectPositions');
-    fprintf('Loading %s', filelist(i).name);
+
     if ~preprocessingRoutine
         tiff = loadtiff(filelist(i).name);
     end
-    parsedData = parseVisualStimData(tiff, rectPositions,'numTrials',4);
+    parsedData = parseVisualStimData(tiff, cycleOrder,'driftCheck','numCycles',6);
     a = 1;
     %normalize 
     normData = cellfun(@(x) double(x) ... 
@@ -80,7 +78,7 @@ for i = 1: length(filelist)
     
     % save array as tif in processedData folder
     cd(dataPath)
-    fprintf('saving %s\n',filelist(i).name);
+    fprintf('saving %s grid\n',filelist(i).name);
     imwrite(finalArray,[filelist(i).name(1:end-4),'_grid.tif'],'Compression','none');
     cd .. 
 end 
