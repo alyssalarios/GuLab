@@ -83,12 +83,14 @@ switch isvector(data)
                 for i = 1:length(driftVector)
                     
                     %define number of frames in trial
-                    if driftVector(i) == 1
-                        framesPerTrial = restFrames + 187;
-                    elseif driftVector(i) == 2
-                        framesPerTrial = restFrames + 188;
-                    elseif driftVector(i) == 3 || 4
+                    if driftVector(i) == 1 
                         framesPerTrial = restFrames + 190;
+                    elseif driftVector(i) == 2
+                        framesPerTrial = restFrames + 190;
+                    elseif driftVector(i) == 3
+                        framesPerTrial = restFrames + 188;
+                    elseif driftVector(i) == 4
+                        framesPerTrial = restFrames + 187;
                     end
                     
                     % grab portion of data for ith trial
@@ -133,12 +135,12 @@ switch isvector(data)
                 
                 for i = 1:length(driftVector)
                     %define number of frames in trial
-                    if driftVector(i) == 1
-                        framesPerTrial = restFrames + 187;
-                    elseif driftVector(i) == 2
-                        framesPerTrial = restFrames + 188;
-                    elseif driftVector(i) == 3 || 4
+                    if driftVector(i) == 1 || 2
                         framesPerTrial = restFrames + 190;
+                    elseif driftVector(i) == 3
+                        framesPerTrial = restFrames + 188;
+                    elseif driftVector(i) == 4
+                        framesPerTrial = restFrames + 187;
                     end
                     
                     % grab portion of data for ith trial

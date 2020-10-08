@@ -52,7 +52,8 @@ for i = 1: length(filelist)
     if ~preprocessingRoutine
         tiff = loadtiff(filelist(i).name);
     end
-    parsedData = parseVisualStimData(tiff, cycleOrder,'driftCheck','numCycles',numCycles);
+    parsedData = parseVisualStimData(tiff, cycleOrder,'driftCheck','numCycles',numCycles,'numFramesPerCycle',...
+        numFramesPerCycle);
     a = 1;
     %normalize 
     normData = cellfun(@(x) double(x) ... 

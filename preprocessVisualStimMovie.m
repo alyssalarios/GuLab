@@ -13,7 +13,7 @@
 % column is an individual trial. this is parsedData variable.
 
 % Movies for each trial are then averaged together to get a stimulation
-% position average. Df is computes by subtracting the average of normFrames
+% position average. Df/f is computes by subtracting the average of normFrames
 % from each frame in the movie.
 
 % data is then separated into individual variables - change number of
@@ -21,16 +21,17 @@
 
 %% Routine parameters
 concatRawSave = 0; %starting from raw/ split up data movies or not
-makeGridTifSave = 1;%save grid tif or not
+makeGridTifSave = 0;%save grid tif or not
 % if saving, go into Gridtif chunk and make sure dimmensions (gridDims)
 %are correct for stimulus parameters
 saveData = 1; % if 1, saves preprocessed data in a mat file.
 %
-loadCatTif = 1;
+loadCatTif = 0;
 
-normFrames = 5:15;
+normFrames = 10:20;
 stimFrames = 25:150;
 stimType = 'driftCheck'; %takes 'bpNoise' or 'driftCheck'
+numFramesPerCycle = 835;
 numCycles = 10;
 
 %% Concatenate raw data
@@ -47,11 +48,22 @@ end
 catMovieDir = dir('*cat.tif');
 metaFile = dir('*.mat');
 if loadCatTif
-    fprintf('Loading %s cat\n',catMovieDir.name);
+    fprintf('Loading %s\n',catMovieDir.name);
     catMovie = loadtiff(catMovieDir.name);
     
 end
 load(metaFile.name,'rectPositions','cycleOrder');
+
+%% Check for dropped frames 
+if mod(size(catMovie,3) ,numFramesPerCycle) ~= 0
+    fprintf('dropped frames detected\n')
+    fprintf('Filtering cycles with dropped frames\n')
+    catMovie = removeTrialsDroppedFrames(catMovie,numFramesPerCycle);
+    numCycles = size(catMovie,3)/ numFramesPerCycle;
+else
+    fprintf('no dropped frames\n')
+end
+
 %% Gridtif
 switch makeGridTifSave
     
@@ -76,14 +88,15 @@ switch makeGridTifSave
         dataPath = [cd,'/','ProcessedData'];
 end
 
-%% Parse raw movie and compute Df
+%% Parse raw movie and compute Dff
 switch stimType
     case 'bpNoise'
         
         %load movie and positions for bandpass filtered noise presentations
         
         
-        parsedData = parseVisualStimData(catMovie,rectPositions,stimType, 'numCycles',numCycles); % depending on how we
+        parsedData = parseVisualStimData(catMovie,rectPositions,stimType, 'numCycles',numCycles,...
+            'numFramesPerCycle',numFramesPerCycle); % depending on how we
         %change the bpNoise stim presentation, might need to go back into
         %this function and make it apply properly
         %       Parameters for this function - name/value pairs
@@ -97,23 +110,24 @@ switch stimType
         
         
         % average all trials and subtract baseline
-        DfAllTrials = avgDf(parsedData,normFrames);
+        DffAllTrials = avgDff(parsedData,normFrames);
     case 'driftCheck'
         %load movie and grating type
         
         
-        parsedData = parseVisualStimData(catMovie,cycleOrder,stimType,'numCycles',numCycles);
+        parsedData = parseVisualStimData(catMovie,cycleOrder,stimType,'numCycles',numCycles,...
+            'numFramesPerCycle',numFramesPerCycle);
         
         
         % average all trials and subtract baseline
-        DfAllTrials = avgDf(parsedData,normFrames);
+        DffAllTrials = avgDff(parsedData,normFrames);
 end
 
 %% Separate averaged movies into new variables and save
 switch stimType
     case 'driftCheck'
         % permute so that first dimmension is time
-        permutedAllTrials = cellfun(@(x) permute(x,[3,1,2]),DfAllTrials,...
+        permutedAllTrials = cellfun(@(x) permute(x,[3,1,2]),DffAllTrials,...
             'un',false);
         
         rightLeft = permutedAllTrials{1,1};
@@ -121,11 +135,20 @@ switch stimType
         topDown = permutedAllTrials{3,1};
         downUp = permutedAllTrials{4,1};
         
+        rightLeftTif = uint16(permutedAllTrials{1,1}*6000);
+        leftRightTif = uint16(permutedAllTrials{2,1}*6000);
+        topDownTif = uint16(permutedAllTrials{3,1}*6000);
+        downUpTif = uint16(permutedAllTrials{4,1}*6000);
+        
         % generate key-value pair for phase-delay angle conversion in python
         % load(metaFile.name,'
         
         
         if saveData
-            save([dataPath,'/DfMovies.mat'],'rightLeft','leftRight','topDown','downUp');
+            save([dataPath,'/avgNormMovies.mat'],'rightLeft','leftRight','topDown','downUp');
+%             saveastiff(rightLeft,[dataPath,'/rightLeft.tif'])
+%             saveastiff(leftRight,[dataPath,'/leftRight.tif'])
+%             saveastiff(topDown,[dataPath,'/topDown.tif'])
+%             saveastiff(downUp,[dataPath,'/downUp.tif'])
         end
 end
